@@ -7,7 +7,7 @@ PRUNE_LOG_LOG=/var/prune.log
 ZRAM_LOG=/var/log
 
 isSafe () {
-	[ -d $HDD_LOG/ ] || echo "ERROR: $HDD_LOG/ doesn't exist! Can't sync." 
+	[ -d $HDD_LOG/ ] || echo "ERROR: $HDD_LOG/ doesn't exist! Can't sync."
 	[ -d $HDD_LOG/ ] || exit 1
 }
 
@@ -21,9 +21,9 @@ syncFromDisk () {
 	getUsage
 	LOG_SIZE=$(du -sk $HDD_LOG/ | awk '{ print $1 }')
 	if [ "$BYTES_AVAIL" -lt "$LOG_SIZE" ];then
-		echo "ERROR: RAM disk too small. Can't sync." 
+		echo "ERROR: RAM disk too small. Can't sync."
 			cp -arvf $HDD_LOG -T $PRUNE_LOG
-			rm -rf $HDD_LOG/oldlog/* 
+			rm -rf $HDD_LOG/oldlog/*
 			exit 1
 	fi
 	cp -arvf $HDD_LOG -T $ZRAM_LOG || exit 1
@@ -48,7 +48,6 @@ createZramLogDrive () {
 getUsage () {
 	BYTES_AVAIL=$(df "/var/log" | tail -1 | awk '{ print $4 }')
 	BYTES_USED=$(df "/var/log" | tail -1 | awk '{ print $3 }')
-	
 }
 
 
@@ -58,6 +57,7 @@ case "$1" in
 		mount --verbose --make-private $HDD_LOG/
 		createZramLogDrive
 		mount --verbose --types ext4 -o nosuid,noexec,nodev /dev/zram${ZRAM_DEV} ${ZRAM_LOG}/
+		mount --verbose --bind /var/log/journal $ZRAM_LOG/journal
 		sync
 		syncFromDisk
 		if [ ! -z "$LOGROTATE_FREQ" ]
@@ -77,12 +77,12 @@ case "$1" in
 			cp /usr/local/bin/log2zram/logrotate /etc/cron.daily/logrotate
 		fi
 		;;
-		
+
 	write)
 		echo 'log2zram: writeToHdd'  2>&1 | logger &
 		cp -arvfu $ZRAM_LOG -T $HDD_LOG 2>&1 | logger &
 		;;
-		
+
 	prune)
 		echo 'log2zram: pruneOldlog'  2>&1 | logger &
 		cp -arvfu $ZRAM_LOG -T $PRUNE_LOG 2>&1 | logger &
