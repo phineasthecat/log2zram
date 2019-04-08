@@ -70,6 +70,7 @@ case "$1" in
 	stop)
 		kill $(cat /usr/local/bin/log2zram/log2zram-schd-pid)
 		syncToDisk
+		umount -l $ZRAM_LOG/journal
 		umount -l $ZRAM_LOG/
 		umount -l $HDD_LOG/
 		if [ ! -z "$LOGROTATE_FREQ" ]
